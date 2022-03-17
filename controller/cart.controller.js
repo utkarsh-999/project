@@ -3,16 +3,17 @@ const Cart = require("../models/cart.model");
 
 exports.addToCart = async (req, res) => {
   const { userId, productId } = req.body;
-  const cart = await Cart.create({
-    productId,
-    userId,
-  });
+
   const product = await Product.findById(productId);
   const item = {
     productId: productId,
     name: product.name,
     price: product.price,
   };
+  const cart = await Cart.create({
+    productId,
+    userId,
+  });
   cart.items.push(item);
   cart.totalPrice += product.price;
   await cart.save();
@@ -30,14 +31,15 @@ exports.addToCart = async (req, res) => {
 };
 
 exports.deleteFromCart = async (req, res) => {
-  const { productId } = req.body;
-  const item = Cart.items.findIndex((p) => p.id == productId);
+  const { productId, id } = req.body;
+  const cart = await Cart.findById(id);
+  const item = cart.items.findIndex((p) => p.id == productId);
   const product = await Product.findById(productId);
   if (product) {
-    Cart.totalPrice -= product.price;
+    cart.totalPrice -= product.price;
   }
   if (item >= 0) {
-    Cart.items.splice(item, 1);
+    cart.items.splice(item, 1);
   }
 };
 
