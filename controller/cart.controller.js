@@ -15,39 +15,50 @@ exports.addToCart = async (req, res) => {
       cart.items.push(item);
       cart.totalPrice += product.price;
       await cart.save();
-      res.json({
-        success: true,
-      });
+      res.send("product added");
     } else {
       const cart = await Cart.create({
         productId,
         userId,
       });
+      return res.send("Cart created");
     }
   } catch (err) {
     console.log(err);
-    res.status(500).send("Something went wrong");
   }
 };
 
 exports.deleteFromCart = async (req, res) => {
-  const { productId, id } = req.body;
-  const cart = await Cart.findById(id);
-  const item = cart.items.findIndex((p) => p.id == productId);
-  const product = await Product.findById(productId);
-  if (product) {
-    cart.totalPrice -= product.price;
-  }
-  if (item >= 0) {
-    cart.items.splice(item, 1);
+  const { productId, userId } = req.body;
+  try {
+    const cart = await Cart.findOne({ userId });
+    if (cart) {
+      const item = cart.items.findIndex((p) => p.id == productId);
+      const product = await Product.findById(productId);
+      if (product) {
+        cart.totalPrice -= product.price;
+      }
+      if (item) {
+        cart.items.splice(item, 1);
+        await cart.save();
+      }
+      return res.send("Product deleted");
+    }
+  } catch (err) {
+    console.log(err);
   }
 };
 
 exports.viewCart = async (req, res) => {
-  const { id } = req.body;
-  const cart = await Cart.findById(id);
-  res.json({
-    success: true,
-    cart,
-  });
+  const { userId } = req.params;
+  try {
+    const cart = await Cart.findOne({ userId });
+    console.log(cart);
+    res.json({
+      success: true,
+      data: cart,
+    });
+  } catch {
+    console.log(err);
+  }
 };
