@@ -15,7 +15,7 @@ exports.addToCart = async (req, res) => {
       cart.items.push(item);
       cart.totalPrice += product.price;
       await cart.save();
-      res.send("product added");
+      res.send("Product added");
     } else {
       const cart = await Cart.create({
         productId,

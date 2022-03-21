@@ -19,7 +19,7 @@ exports.createProduct = async (req, res) => {
 };
 
 exports.byCategory = async (req, res) => {
-  const { category } = req.body;
+  const { category } = req.params;
 
   const product = await Product.find({ category });
 
@@ -27,4 +27,23 @@ exports.byCategory = async (req, res) => {
     success: true,
     product,
   });
+};
+
+exports.getaAll = async (req, res) => {
+  const product = await Product.find();
+
+  res.send({
+    success: true,
+    product,
+  });
+};
+
+exports.deleteProduct = async (req, res) => {
+  const { productId } = req.params;
+  try {
+    const product = await Product.findByIdAndDelete(productId);
+    return res.send("Product Deleted");
+  } catch (err) {
+    console.log(err);
+  }
 };
