@@ -29,10 +29,9 @@ exports.byCategory = async (req, res) => {
   });
 };
 
-exports.getaAll = async (req, res) => {
+exports.getAll = async (req, res) => {
   const product = await Product.find();
-
-  res.send({
+  return res.send({
     success: true,
     product,
   });
@@ -43,6 +42,36 @@ exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(productId);
     return res.send("Product Deleted");
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.addReview = async (req, res) => {
+  const { rating, comment, userId, productId } = req.body;
+  try {
+    const review = {
+      rating,
+      comment,
+      userId,
+    };
+    const product = await Product.findById(productId);
+    const reviewed = product.reviews.find(
+      (i) => i.userId.toString() === userId.toString()
+    );
+    if (reviewed) {
+      res.send("Already Reviewed");
+    } else {
+      product.reviews.push(review);
+      product.numOfReviews = product.reviews.length;
+    }
+
+    let avg = 0;
+    product.reviews.forEach((i) => {
+      avg += i.rating;
+    });
+    product.avgRating = avg / product.reviews.length;
+    await product.save();
   } catch (err) {
     console.log(err);
   }
