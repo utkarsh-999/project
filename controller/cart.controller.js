@@ -3,31 +3,31 @@ const Cart = require("../models/cart.model");
 
 exports.addToCart = async (req, res) => {
   const { userId, productId } = req.body;
-
-  const product = await Product.findById(productId);
-  const item = {
-    productId: productId,
-    name: product.name,
-    price: product.price,
-  };
-  const cart = await Cart.create({
-    productId,
-    userId,
-  });
-  cart.items.push(item);
-  cart.totalPrice += product.price;
-  await cart.save();
-  res.json({
-    success: true,
-  });
-  // Cart.items.push(item);
-  // let data = await Cart.save();
-  // if (product) {
-  //   Cart.items.push(product);
-  //
-  //   Cart.totalPrice += product.price;
-  //   return this.save();
-  // }
+  try {
+    const cart = await Cart.findOne({ userId });
+    if (cart) {
+      const product = await Product.findById(productId);
+      const item = {
+        productId: productId,
+        name: product.name,
+        price: product.price,
+      };
+      cart.items.push(item);
+      cart.totalPrice += product.price;
+      await cart.save();
+      res.json({
+        success: true,
+      });
+    } else {
+      const cart = await Cart.create({
+        productId,
+        userId,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong");
+  }
 };
 
 exports.deleteFromCart = async (req, res) => {
